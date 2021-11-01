@@ -7,20 +7,17 @@ use Razorpay\Api\Errors;
 class Entity extends Resource implements ArrayableInterface
 {
     protected $attributes = array();
-    private $additionHeader = array();
  /**
      * Create method 
      *
      * @param array $attributes 
-     * @param array $additionHeader
-     *
      * 
      */
     protected function create($attributes = null) 
     {
         $entityUrl = $this->getEntityUrl();
         
-        return $this->request('POST', $entityUrl, $attributes, $this->additionHeader);
+        return $this->request('POST', $entityUrl, $attributes);
     }
 
     protected function fetch($id)
@@ -88,11 +85,11 @@ class Entity extends Resource implements ArrayableInterface
      *
      * @return Entity
      */
-    protected function request($method, $relativeUrl, $data = null, $additionHeader = array())
+    protected function request($method, $relativeUrl, $data = null)
     {
         $request = new Request();
 
-        $response = $request->request($method, $relativeUrl, $data, $additionHeader);
+        $response = $request->request($method, $relativeUrl, $data);
 
         if ((isset($response['entity'])) and ($response['entity'] == $this->getEntity()))
         {
@@ -105,20 +102,7 @@ class Entity extends Resource implements ArrayableInterface
             return static::buildEntity($response);
         }
     }
-
-    /**
-     * set Additional Header
-     *
-     *
-     * @param array  $additionHeader
-     *
-     * @return Entity
-     */
-    protected function setAdditionHeader($additionHeader){
-
-        $this->additionHeader = $additionHeader;
-
-    }
+    
     /**
      * Given the JSON response of an API call, wraps it to corresponding entity
      * class or a collection and returns the same.
@@ -182,7 +166,9 @@ class Entity extends Resource implements ArrayableInterface
     public function fill($data)
     {
         $attributes = array();
-
+        
+     if(is_array($data))
+     {   
         foreach ($data as $key => $value)
         {
             if (is_array($value))
@@ -190,7 +176,6 @@ class Entity extends Resource implements ArrayableInterface
                 if  (static::isAssocArray($value) === false)
                 {
                     $collection = array();
-
                     foreach ($value as $v)
                     {
                         if (is_array($v))
@@ -203,7 +188,6 @@ class Entity extends Resource implements ArrayableInterface
                             array_push($collection, $v);
                         }
                     }
-
                     $value = $collection;
                 }
                 else
@@ -214,7 +198,7 @@ class Entity extends Resource implements ArrayableInterface
 
             $attributes[$key] = $value;
         }
-
+      }
         $this->attributes = $attributes;
     }
 
